@@ -1,0 +1,256 @@
+% This must be in the first 5 lines to tell arXiv to use pdfLaTeX, which is strongly recommended.
+\pdfoutput=1
+% In particular, the hyperref package requires pdfLaTeX in order to break URLs across lines.
+
+\documentclass[11pt]{article}
+
+% Remove the "review" option to generate the final version.
+\usepackage[review]{ACL2023}
+
+% Standard package includes
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{listings}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{fontawesome}
+
+\usepackage{xcolor}
+% \lstset{
+%     basicstyle=\footnotesize\ttfamily, 
+%     keywordstyle=\color{blue},  
+%     commentstyle=\color{gray},  
+%     stringstyle=\color{red},
+%     breaklines=true,   
+%     numbers=left,   
+%     numberstyle=\tiny,  
+%     frame=lines   
+% }
+
+% \usepackage{fontspec} % 允许自定义字体
+% \setmonofont{Fira Code} % 这里可以换成 JetBrains Mono 或 Consolas
+
+\lstset{
+    basicstyle=\footnotesize\ttfamily,  % 改成默认等宽字体
+    keywordstyle=\color{blue},  
+    commentstyle=\color{gray},  
+    stringstyle=\color{red},
+    breaklines=true,   
+    numbers=left,   
+    numberstyle=\tiny,  
+    frame=lines   
+}
+
+% For proper rendering and hyphenation of words containing Latin characters (including in bib files)
+\usepackage[T1]{fontenc}
+% For Vietnamese characters
+% \usepackage[T5]{fontenc}
+% See https://www.latex-project.org/help/documentation/encguide.pdf for other character sets
+
+% This assumes your files are encoded as UTF8
+\usepackage[utf8]{inputenc}
+
+% This is not strictly necessary, and may be commented out.
+% However, it will improve the layout of the manuscript,
+% and will typically save some space.
+\usepackage{microtype}
+
+% This is also not strictly necessary, and may be commented out.
+% However, it will improve the aesthetics of text in
+% the typewriter font.
+\usepackage{inconsolata}
+
+
+% If the title and author information does not fit in the area allocated, uncomment the following
+%
+%\setlength\titlebox{<dim>}
+%
+% and set <dim> to something 5cm or larger.
+\title{Milestone 1 Report: Multilingual Sentiment and Toxicity Analysis}
+% \author{Yuchen Li     \\ yuchenli.cn@gmail.com \and 
+%         Lingsong Zeng \\ arnozeng@outlook.com}
+
+% Author information can be set in various styles:
+% For several authors from the same institution:
+% \author{Author 1 \and ... \and Author n \\
+%         Address line \\ a... \\ Address line}
+% if the names do not fit well on one line use
+%         Author 1 \\ {\bf Author 2} \\ ... \\ {\bf Author n} \\
+% For authors from different institutions:
+
+\author{
+    \textcolor{black}{Lingsong Zeng}\thanks{These authors contributed equally to this project and are listed in alphabetical order by first name.} \\ 
+    arnozeng@outlook.com \\
+      \texttt{\href{https://github.ubc.ca/lingsong}{\textcolor{black}{\faGithub \space lingsong}}}
+ \\\And
+    \textcolor{black}{Yuchen Li}\footnotemark[1] \\ 
+    yuchenli.cn@gmail.com \\ 
+  \texttt{\href{https://github.ubc.ca/yyyuchen}{\textcolor{black}{\faGithub \space yyyuchen}}}
+}
+\outgithub{
+    \textcolor{black}{Lingsong Zeng}\thanks{These authors contributed equally to this project and are listed in alphabetical order by first name.} \\ 
+    arnozeng@outlook.com \\
+      \texttt{\href{https://github.ubc.ca/lingsong}{\textcolor{black}{\faGithub \space lingsong}}}
+ \\\And
+    \textcolor{black}{Yuchen Li}\footnotemark[1] \\ 
+    yuchenli.cn@gmail.com \\ 
+  \texttt{\href{https://github.ubc.ca/yyyuchen}{\textcolor{black}{\faGithub \space yyyuchen}}}
+}
+
+\outgithub{
+  \texttt{\href{https://github.ubc.ca/MDS-CL-2024-25/COLX_565_final_project}{\textcolor{black}{\faGithub \space COLX\_565\_final\_project}}}
+}
+
+\date{\today} % 自动插入今天的日期
+
+% To start a seperate ``row'' of authors use \AND, as in
+% \author{Author 1 \\ Address line \\  ... \\ Address line
+%         \AND
+%         Author 2 \\ Address line \\ ... \\ Address line \And
+%         Author 3 \\ Address line \\ ... \\ Address line}
+
+
+
+
+% \author{First Author \\
+%   Affiliation / Address line 1 \\
+%   Affiliation / Address line 2 \\
+%   Affiliation / Address line 3 \\
+%   \texttt{email@domain} \\\And
+%   Second Author \\
+%   Affiliation / Address line 1 \\
+%   Affiliation / Address line 2 \\
+%   Affiliation / Address line 3 \\
+%   \texttt{email@domain} \\}
+% \author{
+%     Yuchen Li \& Lingsong Zeng \\
+%     \texttt{yuchenli.cn@gmail.com, arnozeng@outlook.com}
+% }
+% \author{Yuchen Li \\ yuchenli.cn@gmail.com \and 
+%         Lingsong Zeng \\ arnozeng@outlook.com}
+        % Adds some space before the next author section \and
+        %   % GitHub link under the authors
+      
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    rulecolor=\color{black},
+    breaklines=true,                  % Allow line breaks
+    xleftmargin=\parindent,           % Indentation at the left
+    captionpos=b,                     % Position of the caption
+    showstringspaces=false            % Avoid underlining spaces
+}
+\begin{document}
+\maketitle
+\begin{abstract}
+  In this report, we describe the approach and implementation of a combined sentiment analysis and toxicity detection task using large-language models (LLM). The task involves classifying text into positive, negative, or mixed sentiment and identifying whether text is toxic or non-toxic with explanation. We describe the selection of the model, the integration of tasks and implementation details, followed by the results of the evaluation and the observed challenges.
+\end{abstract}
+
+\section{Overall Approach}
+Our approach involves using a pre-trained causal language model for both sentiment analysis and toxicity detection. The architecture is as follows.
+\begin{enumerate}
+  \item Use a pre-trained model \texttt{\href{https://huggingface.co/ibm-granite/granite-3.0-2b-instruct}{\textcolor{black}{granite-3.0-2b-instruct}}} for text classification and generation tasks.
+  \item Define two distinct prompts: one for sentiment analysis and the other for toxicity detection.
+  \item Build a Langchain framework to process each sentence in the data set with the model, generating both the classification label and an explanation for the label.
+  \item Use evaluation metrics such as accuracy, precision, recall, and F1 score to measure model performance.
+\end{enumerate}
+
+\section{Integration of Sentiment and Toxicity Detection}
+To integrate the sentiment and toxicity detection tasks, we used similar structures for both tasks. For each task, we create a prompt that instructs the model to classify the sentence and provide an explanation in a structured format.
+
+For sentiment analysis, the prompt template was: 
+\begin{quote}
+Question: Explain why the following sentence is classified as positive, negative, or mixed: \{sentence\}. Please give me your class: positive, negative, or mixed and provide your explanation within 50 words as followed structure: 'The sentence is ... (positive, negative, or mixed). ... (your explanation)'
+\end{quote}
+
+
+For toxicity detection, the prompt template was modified as follows:
+\begin{quote}
+  Question: Explain why the following sentence is classified as toxic or non-toxic: \{sentence\}. Please give me your class: toxic or non-toxic and provide your explanation within 50 words as followed structure: 'The sentence is ... (toxic or non-toxic). ... (your explanation)'
+\end{quote}
+
+Each task was processed by iterating through the sentences, generating model predictions, and extracting the relevant information from the generated output using regular expressions.
+
+\section{Implementation Details}
+The code for sentiment and toxicity detection was implemented using the following libraries:
+\begin{itemize}
+  \item \texttt{transformers} for loading pre-trained models and tokenizers.
+  \item \texttt{langchain} for prompt management.
+  \item \texttt{sklearn} for evaluation metrics.
+  \item \texttt{pandas} for handling data.
+  \item \texttt{tqdm} for progress tracking.
+  \item \texttt{google.colab} for mounting Google Drive.
+\end{itemize}
+
+The environment was set up in Google Colab with the necessary libraries installed using the following commands:
+\begin{lstlisting}
+!pip install transformers langchain sklearn tqdm
+\end{lstlisting}
+
+The model was initialized with the following code:
+
+\begin{lstlisting}
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model = AutoModelForCausalLM.from_pretrained("ibm-granite/granite-3.0-2b-instruct", device_map="cuda")
+
+tokenizer = AutoTokenizer.from_pretrained("ibm-granite/granite-3.0-2b-instruct")
+\end{lstlisting}
+
+
+
+The dataset was loaded and processed as follows:
+\begin{lstlisting}
+import pandas as pd
+df = pd.read_csv("/content/drive/MyDrive/565FinalProject/eng_sentiment_test_solutions.csv")
+\end{lstlisting}
+
+After generating results, we evaluated the model's performance using accuracy, precision, recall, and F1-score. The following code was used for evaluation:
+
+\begin{lstlisting}
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+accuracy = accuracy_score(merged_df["class-label"], merged_df["sentiment_label"])
+precision = precision_score(merged_df["class-label"], merged_df["sentiment_label"], average="weighted")
+recall = recall_score(merged_df["class-label"], merged_df["sentiment_label"], average="weighted")
+f1 = f1_score(merged_df["class-label"], merged_df["sentiment_label"], average="weighted")
+\end{lstlisting}
+
+\section{Evaluation and Results}
+The model was evaluated on the provided datasets for both sentiment analysis and toxicity detection tasks using the metrics described above. Preliminary results for each task are as follows:
+
+\textbf{Sentiment Analysis:}
+\begin{quote}
+  \textbf{Accuracy:} 0.8400 \\
+  \textbf{Precision:} 0.8764 \\
+  \textbf{Recall:} 0.8400 \\
+  \textbf{F1 Score:} 0.8407
+\end{quote}
+
+\textbf{Toxicity Detection:}
+\begin{quote}
+  \textbf{Accuracy:} 1.00 \\
+  \textbf{Precision:} 1.00 \\
+  \textbf{Recall:} 1.00 \\
+  \textbf{F1 Score:} 1.00
+\end{quote}
+
+These results are promising, though there is room for improvement in handling more nuanced sentence structures and cases with mixed sentiment or subtle toxicity.
+
+\section{Challenges and Limitations}
+Some challenges and limitations encountered during the project include:
+\begin{itemize}
+\item Running the model locally was constrained by insufficient memory, while cloud-based execution was limited by quota restrictions, making testing and development challenging. This led us to integrate the Granite model from Hugging Face into a local LangChain-based workflow.
+\item The model’s accuracy was suboptimal, requiring improvements through model selection, prompt engineering, and temperature adjustments. Modifying the prompt structure helped provide clearer context for classification, reducing ambiguity, while adjusting the temperature influenced the balance between deterministic and diverse responses, improving overall reliability.
+\item Sentences with ambiguous sentiment or toxicity labels were often misclassified.
+\item The reliance on regular expressions for extracting labels and explanations sometimes led to inaccuracies in retrieving the correct explanations.
+\end{itemize}
+
+In future iterations, more advanced techniques such as fine-tuning the model or further refining the prompt structure could be explored to enhance classification performance.
+
+\section{Conclusion}
+This project demonstrates the feasibility of using large language models for combined sentiment and toxicity detection tasks. By using pre-trained models and prompt-based classification, we were able to classify sentences and provide explanations efficiently. Further refinement of the model and evaluation methods will be needed to address the challenges faced during this work.
+
+\section{Code}
+The code for this project can be found in our github: \texttt{\href{https://github.ubc.ca/MDS-CL-2024-25/COLX_565_final_project}{\textcolor{black}{\faGithub \space COLX\_565\_final\_project}}}, which run end-to-end on the provided datasets.
+\end{document}
